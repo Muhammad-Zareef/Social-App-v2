@@ -1,7 +1,9 @@
 import  { useState } from 'react'
 import auth from '../firebase/config'
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { Typography, TextField, Button, Box } from '@mui/material';
+import { signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword } from "firebase/auth";
+import { Typography, TextField, Button, Box, Divider, Paper } from '@mui/material';
+import GoogleAuthButton from './GoogleAuthButton';
+const provider = new GoogleAuthProvider();
 
 const Signup = () => {
     const [name, setName] = useState("");
@@ -13,7 +15,9 @@ const Signup = () => {
         .then((userCredential) => {
             // Signed up
             const user = userCredential.user;
-            console.log("User created", user)
+            console.log("User created", user);
+            alert("Account created successfully");
+            location.href = '/';
             setName("");
             setEmail("");
             setPassword("");
@@ -21,18 +25,49 @@ const Signup = () => {
         .catch((error) => {
             const errorCode = error.code;
             const errorMessage = error.message;
-            console.log(errorCode);
-            console.log(errorMessage);
+            console.error(errorCode);
+            alert(errorMessage);
+        });
+    }
+    function handleGoogleSignUp(e) {
+        e.preventDefault();
+        signInWithPopup(auth, provider)
+        .then((result) => {
+            // This gives you a Google Access Token. You can use it to access the Google API.
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            const token = credential.accessToken;
+            console.log(token);
+            // The signed-in user info.
+            const user = result.user;
+            // IdP data available using getAdditionalUserInfo(result)
+            console.log("Login", user);
+            // window.location.href = '/home';
+        }).catch((error) => {
+            // Handle Errors here.
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.error("Error code:", errorCode);
+            console.error("Error message:", errorMessage);
+            // The email of the user's account used.
+            const email = error.customData.email;
+            console.error("Email error:", email);
+            // The AuthCredential type that was used.
+            const credential = GoogleAuthProvider.credentialFromError(error);
+            console.log(credential);
         });
     }
     return (
-        <Box component="form" onSubmit={handleSignup} sx={{ maxWidth: "330px", display: "flex", flexDirection: "column", gap: "1.5rem", justifyContent: "center", alignItems: "center", margin: "0 auto", p: 2, border: '1px solid grey' }}>
-            <Typography variant="h3" component="h1">Sign Up</Typography>
-            <TextField type='text' value={name} onChange={e => setName(e.target.value)} id="standard-basic1" label="Name" variant="standard" sx={{width: "100%"}} required />
-            <TextField type='email' value={email} onChange={e => setEmail(e.target.value)} id="standard-basic2" label="Email" variant="standard" sx={{width: "100%"}} required />
-            <TextField type='password' value={password} onChange={e => setPassword(e.target.value)} id="standard-basic3" label="Password" variant="standard" sx={{width: "100%"}} required />
-            <Button type='submit' variant="contained" sx={{marginTop: "0.5rem"}}>Sign Up</Button>
-        </Box>
+        <Paper elevation={5} sx={{ maxWidth: "410px", margin: "0 auto" }}>
+            <Box component="form" onSubmit={handleSignup} sx={{ display: "flex", flexDirection: "column", gap: "1.5rem", justifyContent: "center", alignItems: "center", margin: "0 auto", p: 2, border: '1px solid grey' }}>
+                <Typography variant="h3" component="h1">Sign Up</Typography>
+                <GoogleAuthButton text="Sign up with Google" handleSignIn={handleGoogleSignUp} />
+                <Divider>Or with email and password</Divider>
+                <TextField type='text' value={name} onChange={e => setName(e.target.value)} id="standard-basic1" label="Name" variant="standard" sx={{width: "100%"}} required />
+                <TextField type='email' value={email} onChange={e => setEmail(e.target.value)} id="standard-basic2" label="Email" variant="standard" sx={{width: "100%"}} required />
+                <TextField type='password' value={password} onChange={e => setPassword(e.target.value)} id="standard-basic3" label="Password" variant="standard" sx={{width: "100%"}} required />
+                <Button type='submit' variant="contained" sx={{marginTop: "0.5rem"}}>Sign Up</Button>
+            </Box>
+        </Paper>
     )
 }
 
