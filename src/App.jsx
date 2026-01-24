@@ -8,19 +8,11 @@ import './App.css'
 const router = createBrowserRouter([
   {
     path: "/",
-    element: 
-    <div>
-      <Navbar />
-      <Login />
-    </div>,
+    element: <Login />
   },
   {
     path: "/signup",
-    element: 
-    <div>
-      <Navbar />
-      <Signup />
-    </div>,
+    element: <Signup />
   },
   {
     path: "/home",
