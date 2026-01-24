@@ -1,15 +1,20 @@
 import  { useState } from 'react'
 import auth from '../firebase/config'
+import { useNavigate } from 'react-router-dom'
 // import { Button } from "@mui/material";
 // import GoogleIcon from "@mui/icons-material/Google";
 import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, signInWithRedirect } from "firebase/auth";
-import { Typography, TextField, Button, Box, Divider, Paper } from '@mui/material';
+import { Typography, TextField, Button, Box, Divider, Paper, Snackbar, Alert } from '@mui/material';
 import GoogleAuthButton from './GoogleAuthButton';
 const provider = new GoogleAuthProvider();
 
 const Login = () => {
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [open, setOpen] = useState(false);
+    const [severity, setSeverity] = useState("");
+    const [message, setMessage] = useState("");
     function handleLogin(e) {
         e.preventDefault();
         signInWithEmailAndPassword(auth, email, password)
@@ -17,13 +22,21 @@ const Login = () => {
             // Signed in 
             const user = userCredential.user;
             console.log("Login successfully", user);
+            setOpen(true);
+            setSeverity("success");
+            setMessage("Login successfully");
             setEmail("");
             setPassword("");
-            window.location.href = '/home';
+            setTimeout(() => {
+                navigate('/home');
+            }, 2000);
         })
         .catch((error) => {
             const errorCode = error.code;
             const errorMessage = error.message;
+            setOpen(true);
+            setSeverity("error");
+            setMessage(errorMessage);
             console.error("Error code:", errorCode);
             console.error("Error message:", errorMessage);
         });
@@ -55,17 +68,28 @@ const Login = () => {
             console.log(credential);
         });
     }
+    const handleClose = (event, reason) => {
+        if (reason === "clickaway") return;
+        setOpen(false);
+    }
     return (
-        <Paper elevation={5} sx={{ maxWidth: "410px", margin: "0 auto" }}>
-            <Box component="form" onSubmit={handleLogin} sx={{ display: "flex", flexDirection: "column", gap: "1.5rem", justifyContent: "center", alignItems: "center", margin: "0 auto", p: 2, border: '1px solid grey' }}>
-                <Typography variant="h3" component="h1">Login</Typography>
-                <GoogleAuthButton text="Sign in with Google" handleSignIn={handleGoogleSignIn} />
-                <Divider>Or with email and password</Divider>
-                <TextField type='email' value={email} onChange={e => setEmail(e.target.value)} id="standard-basic2" label="Email" variant="standard" sx={{width: "100%"}} required />
-                <TextField type='password' value={password} onChange={e => setPassword(e.target.value)} id="standard-basic3" label="Password" variant="standard" sx={{width: "100%"}} required />
-                <Button type='submit' variant="contained" sx={{marginTop: "0.5rem"}}>Login</Button>
-            </Box>
-        </Paper>
+        <>
+            <Paper elevation={5} sx={{ maxWidth: "410px", margin: "0 auto" }}>
+                <Box component="form" onSubmit={handleLogin} sx={{ display: "flex", flexDirection: "column", gap: "1.5rem", justifyContent: "center", alignItems: "center", margin: "0 auto", p: 2, border: '1px solid grey' }}>
+                    <Typography variant="h3" component="h1">Login</Typography>
+                    <GoogleAuthButton text="Sign in with Google" handleSignIn={handleGoogleSignIn} />
+                    <Divider>Or with email and password</Divider>
+                    <TextField type='email' value={email} onChange={e => setEmail(e.target.value)} id="standard-basic2" label="Email" variant="standard" sx={{width: "100%"}} required />
+                    <TextField type='password' value={password} onChange={e => setPassword(e.target.value)} id="standard-basic3" label="Password" variant="standard" sx={{width: "100%"}} required />
+                    <Button type='submit' variant="contained" sx={{marginTop: "0.5rem"}}>Login</Button>
+                </Box>
+            </Paper>
+            <Snackbar open={open} onClose={handleClose} autoHideDuration={2000}>
+                <Alert severity={severity} variant="filled">
+                    {message}
+                </Alert>
+            </Snackbar>
+        </>
     )
 }
 
