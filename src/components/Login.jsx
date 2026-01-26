@@ -1,10 +1,12 @@
 import  { useState } from 'react'
 import auth from '../firebase/config'
+import { db } from '../firebase/config';
 import { useNavigate, NavLink } from 'react-router-dom'
 // import { Button } from "@mui/material";
 // import GoogleIcon from "@mui/icons-material/Google";
-import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, signInWithRedirect } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, signInWithRedirect, onAuthStateChanged } from "firebase/auth";
 import { Typography, TextField, Button, Box, Divider, Paper, Snackbar, Alert } from '@mui/material';
+import { collection, addDoc, Timestamp } from "firebase/firestore";
 import GoogleAuthButton from './GoogleAuthButton';
 const provider = new GoogleAuthProvider();
 
@@ -28,7 +30,7 @@ const Login = () => {
             setEmail("");
             setPassword("");
             setTimeout(() => {
-                navigate('/home');
+                // navigate('/home');
             }, 2000);
         })
         .catch((error) => {
@@ -48,7 +50,6 @@ const Login = () => {
             // This gives you a Google Access Token. You can use it to access the Google API.
             const credential = GoogleAuthProvider.credentialFromResult(result);
             const token = credential.accessToken;
-            console.log(token);
             // The signed-in user info.
             const user = result.user;
             // IdP data available using getAdditionalUserInfo(result)
@@ -59,6 +60,14 @@ const Login = () => {
             setTimeout(() => {
                 navigate('/home');
             }, 2000);
+            saveUser({
+                name: user.displayName,
+                email: user.email,
+                emailVerified: user.emailVerified,
+                photoURL: user.photoURL,
+                uid: user.uid,
+                createdAt: Timestamp.fromDate(new Date())
+            });
         }).catch((error) => {
             // Handle Errors here.
             const errorCode = error.code;
@@ -75,6 +84,13 @@ const Login = () => {
             const credential = GoogleAuthProvider.credentialFromError(error);
             console.log(credential);
         });
+    }
+    async function saveUser(user) {
+        try {
+            const docRef = await addDoc(collection(db, "users"), user);
+        } catch (e) {
+            console.error("Error adding document: ", e);
+        }
     }
     const handleClose = (event, reason) => {
         if (reason === "clickaway") return;

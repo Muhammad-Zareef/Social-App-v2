@@ -1,9 +1,10 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom"
-import Login from './components/Login'
-import Signup from './components/Signup'
-import Navbar from './components/Navbar'
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Login from './components/Login';
+import Signup from './components/Signup';
+import Navbar from './components/Navbar';
 import Home from './components/Home';
-import './App.css'
+import NotFound from "./components/NotFound";
+import './App.css';
 
 const router = createBrowserRouter([
   {
@@ -20,7 +21,15 @@ const router = createBrowserRouter([
     <div>
       <Home />
     </div>,
+    // children: [
+    //   path: 'about',
+    //   element: 
+    // ]
   },
+  {
+    path: '*',
+    element: <NotFound />
+  }
 ]);
 
 function App() {
